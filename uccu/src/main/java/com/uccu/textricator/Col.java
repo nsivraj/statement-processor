@@ -1,30 +1,12 @@
 package com.uccu.textricator;
 
-public class Col {
+public class Col extends ColBoundary {
+	
 	private String data;
-	private String ulx;
-	private String lrx;
 	
 	public Col(String data, String ulx, String lrx) {
+		super(ulx, lrx);
 		this.data = data;
-		this.ulx = ulx;
-		this.lrx = lrx;
-	}
-	
-	public String getUlx() {
-		return ulx;
-	}
-	
-	public String getLrx() {
-		return lrx;
-	}
-	
-	public void setUlx(String ulx) {
-		this.ulx = ulx;
-	}
-	
-	public void setLrx(String lrx) {
-		this.lrx = lrx;
 	}
 	
 	public void appendData(String newData) {

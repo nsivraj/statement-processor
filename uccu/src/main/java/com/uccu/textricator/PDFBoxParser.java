@@ -34,6 +34,7 @@ public class PDFBoxParser {
         
             // page,ulx,uly,lrx,lry,width,height,content,font,fontSize,fontColor,bgcolor
             Row theRow = null;
+            ColumnSpec colSpec = null;
             String page = null;
             String ulx = null;
             String uly = null;
@@ -51,8 +52,11 @@ public class PDFBoxParser {
                 
                 //if page and uly and lry are the same then the content is in the same row
                 if(theRow == null || !theRow.matches(page, uly, lry)) {
-                	statement.updateMaxCols(theRow);
-                	theRow = new Row(page, uly, lry);
+                	if(theRow != null) {
+                		statement.updateMaxCols(theRow);
+                		colSpec = theRow.selectColumnSpec();
+                	}
+                	theRow = new Row(page, uly, lry, colSpec);
                     statement.addRow(theRow);
                 }
                 theRow.addData(csvRecord.get("content"), ulx, lrx);
