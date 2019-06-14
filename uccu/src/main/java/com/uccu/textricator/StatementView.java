@@ -53,7 +53,7 @@ final class StatementView {
         try {
             return this.verbose ? file.getCreated() + " : " + file.getModified() + " : " + file.getSize() + " " + file.getName() : file.getFullPath();
         } catch (IOException e) {
-            return this.verbose ? "E " + file.getName() : file.getName();
+            return this.verbose ? e + " :: " + file.getName() : file.getName();
         }
     }
 }

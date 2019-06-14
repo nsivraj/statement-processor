@@ -114,12 +114,15 @@ public class PDFBoxStatementProcessor {
     }
     
     public static void main(String[] args) {
-        // args[0] is the number of the year
-        // args[1] is the folder containing the 12 statements for the year
+        // args[0] is the number of the year and defaults to "2018", i.e. "2018"
+        // args[1] is the folder containing the 12 statements for the year and defaults to "."
+    	//         i.e. /Users/nsivraj/forge/tools/textricator-9.0.44/uccu/uccu_statements/2018
+    	// args[2] is a filter for which files to include and defaults to ".csv"
+    	//         i.e. ".txt"
         PDFBoxStatementProcessor processor = new PDFBoxStatementProcessor();
         processor.setYear(new Integer(args.length >= 1 ? args[0] : "2018"));
         processor.setStatementsFolder(args.length >= 2 ? args[1] : ".");
-        processor.setFilter(args.length >= 3 ? args[2] : ".csv$");
+        processor.setFilter(args.length >= 3 ? args[2] : ".csv");
         processor.parseStatements();
         processor.printStatements();
     }

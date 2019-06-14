@@ -34,7 +34,7 @@ public class PDFBoxParser {
         
             // page,ulx,uly,lrx,lry,width,height,content,font,fontSize,fontColor,bgcolor
             Row theRow = null;
-            ColumnSpec colSpec = null;
+            //ColumnLayout colLayout = null;
             String page = null;
             String ulx = null;
             String uly = null;
@@ -42,6 +42,9 @@ public class PDFBoxParser {
             String lry = null;
             //int csvRecordCount = 0;
             for (CSVRecord csvRecord : csvParser) {
+            	
+            	System.out.println("CSVRecord: " + csvRecord.toMap());
+            	
                 // Accessing values by Header names
                 page = csvRecord.get("page");
                 ulx = csvRecord.get("ulx");
@@ -54,12 +57,23 @@ public class PDFBoxParser {
                 if(theRow == null || !theRow.matches(page, uly, lry)) {
                 	if(theRow != null) {
                 		statement.updateMaxCols(theRow);
-                		colSpec = theRow.selectColumnSpec();
+                		//colLayout = theRow.selectColumnLayout();
+                		Row rowToAdjust = statement.doesColumnLayoutNeedAdjusting(theRow);
+                		if(rowToAdjust != null) {
+                			if(rowToAdjust == theRow) {
+                				theRow.adjustColumnLayout(statement.getRowContainingCurrentColumnLayout());
+                			} else {
+                				rowToAdjust.adjustColumnLayout(theRow);
+                			}
+                		}
                 	}
-                	theRow = new Row(page, uly, lry, colSpec);
+                    //theRow = new Row(page, uly, lry, colLayout);
+                    theRow = new Row(page, uly, lry);
                     statement.addRow(theRow);
                 }
                 theRow.addData(csvRecord.get("content"), ulx, lrx);
+                
+                System.out.println("Added to row: " + theRow);
                 
 //                if(csvRecordCount > 200) {
 //                	break;

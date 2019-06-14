@@ -1,0 +1,10 @@
+1) Fix the PDFBoxStatementProcessor to more intelligently decide how many columns are in the
+extracted textricator .csv and which data goes into which columns.
+
+2) Add script to run the PDFBoxStatementProcessor from the commandline
+java -cp ??? com.uccu.textricator.PDFBoxStatementProcessor 2018 /Users/nsivraj/forge/tools/textricator-9.0.44/uccu/uccu_statements/2018 .csv
+
+3) Rename pdf2text.sh to pdf2csv.sh and have it convert a whole folder of statements at a time
+
+4) 
+

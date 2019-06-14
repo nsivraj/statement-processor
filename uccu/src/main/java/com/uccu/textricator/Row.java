@@ -1,51 +1,54 @@
 package com.uccu.textricator;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class Row {
 	
 	public static final Double SPACE_SIZE = 5.5;
-	public static final Double COORD_DELTA = 0.8;
+	public static final Double ULY_COORD_DELTA = 0.8;
+	public static final Double LRY_COORD_DELTA = 0.95;
 	
-	private List<Col> data;
-	private ColumnSpec colSpec;
+	//private List<Col> data;
+	private ColumnLayout data;
 	private String page;
 	private String uly;
 	private String lry;
 	
-	public Row(String page, String uly, String lry, ColumnSpec colSpec) {
-		data = new ArrayList<Col>();
+	//public Row(String page, String uly, String lry, ColumnLayout colLayout) {
+	public Row(String page, String uly, String lry) {
+		//data = new ArrayList<>();
+		data = new ColumnLayout();
 		this.page = page;
 		this.uly = uly;
 		this.lry = lry;
-		this.colSpec = colSpec;
+		//this.colLayout = colLayout;
 	}
 	
 	public boolean matches(String page, String uly, String lry) {
 		if(this.page.equalsIgnoreCase(page) && 
-			sameCoordinate(this.uly, uly) &&
-			sameCoordinate(this.lry, lry)) {
+			sameCoordinate(this.uly, uly, ULY_COORD_DELTA) &&
+			sameCoordinate(this.lry, lry, LRY_COORD_DELTA)) {
 			return true;
 		}
 		
 		return false;
 	}
 	
-	public boolean sameCoordinate(String coord1, String coord2) {
+	public boolean sameCoordinate(String coord1, String coord2, double delta) {
 		double c1 = Double.parseDouble(coord1);
 		double c2 = Double.parseDouble(coord2);
-		return Math.abs(c1 - c2) < COORD_DELTA;
+		return Math.abs(c1 - c2) < delta;
 	}
 	
 	public List<Col> getData() {
-		return data;
+		return data.getColumns();
 	}
 	
 	public int numberOfCols() {
 		return data.size();
 	}
 	
+	@Override
 	public String toString() {
 		return data.toString();
 	}
@@ -62,14 +65,14 @@ public class Row {
 		return false;
 	}
 	
-	private void addColUsingColumnSpec(int newIndex, String newData, String ulx, String lrx) {
-		if(colSpec != null) {
-			// find out into which column from the colSpect that the ulx and lrx fit
-			// then insert the new Col into that index in the data list
-		} else {
-			data.add(newIndex, new Col(newData, ulx, lrx));
-		}
-	}
+	// private void addColUsingColumnLayout(int newIndex, String newData, String ulx, String lrx) {
+	// 	if(colLayout != null) {
+	// 		// find out into which column from the colLayoutt that the ulx and lrx fit
+	// 		// then insert the new Col into that index in the data list
+	// 	} else {
+	// 		data.add(newIndex, new Col(newData, ulx, lrx));
+	// 	}
+	// }
 	
 	private void addOrUpdateCol(int newIndex, String newData, String ulx, String lrx) {
 		Col col = null;
@@ -85,15 +88,15 @@ public class Row {
 			//System.out.println("The difference between '"+col.getData()+"' and '"+newData+"' is '"+(newCoord - colCoord)+"'");
 			if(Math.abs(newCoord - colCoord) < SPACE_SIZE || combineData(col.getData(), newData)) {
 				col.appendData(" "+newData);
-				col.setUlx(ulx);
+				// keep ulx (upper left x) of previous data but change lrx (lower right x) to newData
 				col.setLrx(lrx);
 			} else {
-				//data.add(newIndex, new Col(newData, ulx, lrx));
-				addColUsingColumnSpec(newIndex, newData, ulx, lrx);
+				data.add(newIndex, new Col(newData, ulx, lrx));
+				//addColUsingColumnLayout(newIndex, newData, ulx, lrx);
 			}
 		} else {
-			//data.add(newIndex, new Col(newData, ulx, lrx));
-			addColUsingColumnSpec(newIndex, newData, ulx, lrx);
+			data.add(newIndex, new Col(newData, ulx, lrx));
+			//addColUsingColumnLayout(newIndex, newData, ulx, lrx);
 		}
 	}
 	
@@ -113,40 +116,48 @@ public class Row {
 			addOrUpdateCol(colCount, newData, ulx, lrx);
 		}
 	}
-	
-	public boolean rowStartsNewColumnSpec() {
-		//inspect data to see if this rows data is a new column spec
-		//Date,Date,Transaction Description,Withdrawal,Deposit,Ending Balance
-		if("Date".equalsIgnoreCase(data.get(0).getData()) &&
-			"Date".equalsIgnoreCase(data.get(1).getData()) &&
-			"Transaction Description".equalsIgnoreCase(data.get(2).getData()) &&
-			"Withdrawal".equalsIgnoreCase(data.get(3).getData()) &&
-			"Deposit".equalsIgnoreCase(data.get(4).getData()) &&
-			"Ending Balance".equalsIgnoreCase(data.get(5).getData())) {
-			
-			return true;
-		}
-		
-		return false;
-	}
 
-	public boolean rowEndsColumnSpec() {
-		if("Total For".equalsIgnoreCase(data.get(0).getData()) &&
-			"Total".equalsIgnoreCase(data.get(1).getData())) {
-			
-			return true;
-		}
+	public void adjustColumnLayout(Row row) {
+		// adjust my column layout to match the column layout of the row parameter
+		//System.out.println("Adjusting this row: " + this);
+		//System.out.println("To match row: " + row);
 		
-		return false;
+		data.adjustColumnLayout(row.data);
 	}
 	
-	public ColumnSpec selectColumnSpec() {
-		if(rowStartsNewColumnSpec()) {
-			colSpec = new ColumnSpec(data);
-		} else if(rowEndsColumnSpec()) {
-			colSpec = null;
-		}
+//	public boolean rowStartsNewColumnLayout() {
+//		//inspect data to see if this rows data is a new column spec
+//		//Date,Date,Transaction Description,Withdrawal,Deposit,Ending Balance
+//		if("Date".equalsIgnoreCase(data.get(0).getData()) &&
+//			"Date".equalsIgnoreCase(data.get(1).getData()) &&
+//			"Transaction Description".equalsIgnoreCase(data.get(2).getData()) &&
+//			"Withdrawal".equalsIgnoreCase(data.get(3).getData()) &&
+//			"Deposit".equalsIgnoreCase(data.get(4).getData()) &&
+//			"Ending Balance".equalsIgnoreCase(data.get(5).getData())) {
+//			
+//			return true;
+//		}
+//		
+//		return false;
+//	}
+
+//	public boolean rowEndsColumnLayout() {
+//		if("Total For".equalsIgnoreCase(data.get(0).getData()) &&
+//			"Total".equalsIgnoreCase(data.get(1).getData())) {
+//			
+//			return true;
+//		}
+//		
+//		return false;
+//	}
+	
+	// public ColumnLayout selectColumnLayout() {
+	// 	if(rowStartsNewColumnLayout()) {
+	// 		colLayout = new ColumnLayout(data);
+	// 	} else if(rowEndsColumnLayout()) {
+	// 		colLayout = null;
+	// 	}
 		
-		return colSpec;
-	}
+	// 	return colLayout;
+	// }
 }
