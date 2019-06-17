@@ -4,7 +4,6 @@ import java.io.BufferedWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.csv.CSVFormat;
@@ -51,7 +50,14 @@ public class UccuStatement extends File {
 		if(csvRow.startsWith("Date") && csvRow.contains("Date") &&
 				csvRow.contains("Transaction Description") && csvRow.contains("Withdrawal") &&
 				csvRow.contains("Deposit") && csvRow.endsWith("Ending Balance")) {
+			
 			currentTransactionHeaderRow = row;
+			Col effectiveDateCol = currentTransactionHeaderRow.getData().get(1);
+			Col transDescriptionCol = currentTransactionHeaderRow.getData().get(2);
+			Col withdrawalCol = currentTransactionHeaderRow.getData().get(3);
+			transDescriptionCol.setUlx(effectiveDateCol.getLrx(), 10);
+			transDescriptionCol.setLrx(withdrawalCol.getUlx(), -10);
+			
 			return true;
 		} else {
 			return false;
@@ -62,7 +68,7 @@ public class UccuStatement extends File {
 		// """,,Total For,Total,,"
 		// "The average daily balance during this period was"
 		String csvRow = row.toString();
-		if((csvRow.contains("Total For") && csvRow.contains(", Total, ")) ||
+		if((csvRow.startsWith("Total For") && csvRow.contains(", Total")) ||
 				csvRow.startsWith("The average daily balance during this period was")) {
 			return true;
 		} else {
@@ -76,6 +82,30 @@ public class UccuStatement extends File {
 		if(csvRow.startsWith("614224") && csvRow.contains(" to ") &&
 				csvRow.contains(" of ")) {
 			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public boolean checkIfPartOfPreviousTransactionDescription(Row row) {
+		if(currentTransactionHeaderRow != null) {
+			List<Col> cols = row.getData();
+			boolean isPartOfPreviousDesc = true;
+			for(int colIndex = 0; colIndex < cols.size(); ++ colIndex) {
+				String colContent = cols.get(colIndex).getData();
+				if(colContent != null && colContent.trim().length() > 0 &&
+						colIndex != 2) {
+					isPartOfPreviousDesc = false;
+					break;
+				}
+			}
+			
+			if(isPartOfPreviousDesc) {
+				rows.remove(rows.size() - 1);
+				Row lastRow = rows.get(rows.size() - 1);
+				lastRow.getData().get(2).appendData(" "+row.getData().get(2).getData());
+			}
+			return isPartOfPreviousDesc;
 		} else {
 			return false;
 		}

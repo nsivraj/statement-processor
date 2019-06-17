@@ -57,6 +57,7 @@ public class ColumnLayout {
 		List<Col> newColumns = new ArrayList<>(layout.size());
 		for(int columnsIndex = 0; columnsIndex < columns.size(); ++columnsIndex) {
 			Col columnsCol = columns.get(columnsIndex);
+			boolean foundMatchingColumn = false;
 			for(int layoutIndex = newColumns.size(); layoutIndex < layout.size(); ++layoutIndex) {
 				Col layoutCol = layout.columns.get(layoutIndex);
 				if(columnsCol.matchesBoundary(layoutCol)) {
@@ -73,10 +74,18 @@ public class ColumnLayout {
 						layoutCol.setLrx(columnsCol.lrx);
 					}
 					newColumns.add(layoutIndex, columnsCol);
+					foundMatchingColumn = true;
 					break;
 				} else {
 					newColumns.add(layoutIndex, new Col("", layoutCol.ulx, layoutCol.lrx));
 				}
+			}
+			
+			if(!foundMatchingColumn) {
+				// if the inner for loop never hit the break statement then we
+				// did not find a column that matches columnsCol, this is
+				// really BAD and we cannot allow it to happen.
+				throw new NoMatchingColumnFoundException("Could not find a boundary in '" + layout + "' that matches the boundary '" + columnsCol.boundsAsString() + "'");
 			}
 		}
 		columns = newColumns;

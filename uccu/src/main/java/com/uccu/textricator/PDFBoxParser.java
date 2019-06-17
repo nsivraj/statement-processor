@@ -60,8 +60,13 @@ public class PDFBoxParser {
                 		//colLayout = theRow.selectColumnLayout();
                 		Row rowToAdjust = statement.doesColumnLayoutNeedAdjusting(theRow);
                 		if(rowToAdjust != null) {
+                			// The == comparison below is correct. If the returned rowToAdjust
+                			// is the EXACT row passed in as the parameter to the
+                			// doesColumnLayoutNeedAdjusting method then use a different
+                			// ColumnLayout provided by the statement
                 			if(rowToAdjust == theRow) {
                 				theRow.adjustColumnLayout(statement.getRowContainingCurrentColumnLayout());
+                				statement.checkIfPartOfPreviousTransactionDescription(theRow);
                 			} else {
                 				rowToAdjust.adjustColumnLayout(theRow);
                 			}
@@ -72,7 +77,6 @@ public class PDFBoxParser {
                     statement.addRow(theRow);
                 }
                 theRow.addData(csvRecord.get("content"), ulx, lrx);
-                
                 System.out.println("Added to row: " + theRow);
                 
 //                if(csvRecordCount > 200) {

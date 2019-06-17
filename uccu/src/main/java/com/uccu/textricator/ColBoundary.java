@@ -20,9 +20,17 @@ public class ColBoundary {
 	public void setUlx(String ulx) {
 		this.ulx = ulx;
 	}
+
+	public void setUlx(String ulx, int i) {
+		this.ulx = String.valueOf(Double.parseDouble(ulx) + i);
+	}
 	
 	public void setLrx(String lrx) {
 		this.lrx = lrx;
+	}
+	
+	public void setLrx(String lrx, int i) {
+		this.lrx = String.valueOf(Double.parseDouble(lrx) + i);
 	}
 	
 	public String boundsAsString() {
